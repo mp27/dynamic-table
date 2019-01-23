@@ -1,5 +1,8 @@
 import Vue from 'vue'
-import Vuex from 'vuex';
+
+//bootstrap styles and js
+import 'bootstrap'
+import 'bootstrap/dist/css/bootstrap.min.css'
 
 import App from './App.vue'
 import store from './store'
