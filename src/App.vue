@@ -1,22 +1,52 @@
 <template>
     <div id="app">
-        <DynamicTable />
+        <DynamicTable :data="usersMeta.data" :total="usersMeta.total" :columns="columns" />
     </div>
 </template>
 
 <script>
     import DynamicTable from './components/DynamicTable.vue'
-    import {mapActions} from 'vuex'
+    import {mapActions, mapState} from 'vuex'
+
     export default {
         name: 'app',
         data(){
           return {
               currentPage: 1,
-              per_page: 10
+              per_page: 100,
+              columns: [
+                  {
+                      name: "ID",
+                      key: "_id",
+                      type: "string"
+                  },
+                  {
+                      name: "Email",
+                      key: "email",
+                      type: "string"
+                  },
+                  {
+                      name: "Name",
+                      key: "name",
+                      type: "string"
+                  },
+                  {
+                      name: "Company",
+                      key: "company",
+                      type: "string"
+                  }
+              ]
           }
         },
         components: {
             DynamicTable
+        },
+        computed: {
+            ...mapState({
+                usersMeta: ({users}) => {
+                    return users.all
+                }
+            })
         },
         created(){
             this.getAllUsers({
@@ -30,3 +60,10 @@
         }
     }
 </script>
+<style>
+    html,body, #app{
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+    }
+</style>

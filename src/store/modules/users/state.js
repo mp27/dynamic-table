@@ -1,3 +1,6 @@
 export default {
-    all: []
+    all: {
+        total: 0,
+        data: []
+    }
 }
