@@ -8,8 +8,8 @@
             </div>
         </div>
         <div class="table-body">
-            <div class="table-row" v-for="row in data">
-                <div class="wrapper" v-for="column in columns">
+            <div class="table-row" v-for="row in data" :key="row[uniqueKey]">
+                <div class="wrapper" v-for="(column, ind) in columns" :key="ind">
                     <div class="text">
                         {{row[column.key]}}
                     </div>
@@ -41,6 +41,12 @@
             total: {
                 type: Number,
                 required: true
+            },
+            uniqueKey: {
+                type: String,
+                default: () => {
+                    return "id"
+                }
             }
         },
         methods: {

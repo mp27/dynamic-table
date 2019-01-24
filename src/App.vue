@@ -1,6 +1,6 @@
 <template>
     <div id="app">
-        <DynamicTable :data="usersMeta.data" :total="usersMeta.total" :columns="columns" />
+        <DynamicTable :data="usersMeta.data" :total="usersMeta.total" :columns="columns" :uniqueKey="uniqueKey" />
     </div>
 </template>
 
@@ -35,7 +35,8 @@
                       key: "company",
                       type: "string"
                   }
-              ]
+              ],
+              uniqueKey: '_id'
           }
         },
         components: {
