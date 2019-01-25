@@ -1,6 +1,11 @@
 <template>
     <div id="app">
-        <DynamicTable :data="usersMeta.data" :total="usersMeta.total" :columns="columns" :uniqueKey="uniqueKey" />
+        <DynamicTable :data="usersMeta.data"
+                      :total="usersMeta.total"
+                      :columns="columns"
+                      :uniqueKey="uniqueKey"
+                      @loadData="getAllUsers"
+        />
     </div>
 </template>
 
@@ -36,7 +41,7 @@
                       type: "string"
                   }
               ],
-              uniqueKey: '_id'
+              uniqueKey: '_id',
           }
         },
         components: {
@@ -47,12 +52,6 @@
                 usersMeta: ({users}) => {
                     return users.all
                 }
-            })
-        },
-        created(){
-            this.getAllUsers({
-                page: this.currentPage,
-                per_page: this.per_page
             })
         },
         methods: {
