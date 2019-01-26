@@ -8,11 +8,7 @@
                       @rowSelected="select"
                       @deleteClick="deleteRow"
                       @editClick="editRow"
-        >
-            <div class="actions" slot="actions">
-                <h1>Actions</h1>
-            </div>
-        </DynamicTable>
+        />
     </div>
 </template>
 
