@@ -5,7 +5,14 @@
                       :columns="columns"
                       :uniqueKey="uniqueKey"
                       @loadData="getAllUsers"
-        />
+                      @rowSelected="select"
+                      @deleteClick="deleteRow"
+                      @editClick="editRow"
+        >
+            <div class="actions" slot="actions">
+                <h1>Actions</h1>
+            </div>
+        </DynamicTable>
     </div>
 </template>
 
@@ -39,6 +46,27 @@
                       name: "Company",
                       key: "company",
                       type: "string"
+                  },
+                  {
+                      name: "Actions",
+                      type: "actions",
+                      actions: {
+                          edit: {
+                              visible: true,
+                              label: "Edit",
+                              classes: "btn btn-sm btn-success",
+                              style: {
+                                marginRight: '15px'
+                              },
+                              eventName: "editClick"
+                          },
+                          delete: {
+                              visible: true,
+                              label: "Delete",
+                              classes: "btn btn-sm btn-danger",
+                              eventName: "deleteClick"
+                          }
+                      }
                   }
               ],
               uniqueKey: '_id',
@@ -56,7 +84,16 @@
         },
         methods: {
             // map vuex action getAllUsers, that are namespaced to users
-            ...mapActions("users", ['getAllUsers'])
+            ...mapActions("users", ['getAllUsers']),
+            select(row){
+                alert(row[this.uniqueKey]);
+            },
+            editRow(row){
+                alert(`EDIT: ${row[this.uniqueKey]}`);
+            },
+            deleteRow(row){
+                alert(`DELETE: ${row[this.uniqueKey]}`);
+            }
         }
     }
 </script>

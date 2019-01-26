@@ -2,17 +2,52 @@
     <div class="table-container">
         <div class="table-body" ref="tableBody">
             <div class="table-row header">
-                <div class="wrapper">
-                    <div v-for="(column, ind) in columns" class="p-2" :key="ind" :ref="column.key">
-                        <div class="text">{{column.name}}</div>
-                    </div>
+                <div class="wrapper" v-for="(column, ind) in columns" :key="ind" :ref="column.key">
+                    <div class="text">{{column.name}}</div>
                 </div>
             </div>
-            <div class="table-row"  ref="row" v-for="(row, i) in buffer" :key="row[uniqueKey] + i">
+            <div class="table-row"
+                 ref="row"
+                 v-for="(row, i) in buffer"
+                 :key="row[uniqueKey] + i"
+                 :class="{'odd': (i+1) % 2 != 0}"
+                 @click="rowSelected(row)"
+            >
                 <div class="wrapper" v-for="(column, ind) in columns" :key="ind">
-                    <div class="text">
-                        {{row[column.key]}}
-                    </div>
+                    <template v-if="!column.type || column.type == columnTypes.string">
+                        <div class="text">
+                            {{row[column.key]}}
+                        </div>
+                    </template>
+                    <template v-else-if="column.type == columnTypes.image">
+                        <div class="text">
+                            <img :src="row[column.key]">
+                        </div>
+                    </template>
+                    <template v-else-if="column.type == columnTypes.html">
+                        <div class="text" v-html="row[column.key]">
+                        </div>
+                    </template>
+                    <template v-else-if="column.type == columnTypes.actions">
+                        <div class="text">
+                            <div class="actions">
+                                <template v-for="action in column.actions">
+                                    <button v-if="action.visible"
+                                            :class="action.classes"
+                                            :style="action.style"
+                                            @click.stop="actionClicked(action, row)"
+                                    >
+                                        {{action.label}}
+                                    </button>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                    <template v-else>
+                        <div class="text">
+                            {{row[column.key]}}
+                        </div>
+                    </template>
                 </div>
             </div>
         </div>
@@ -52,16 +87,19 @@
         data() {
             return {
                 oldScroll: 0,
-                pageFetchScroll: 0,
-                defaultRowHeight: 30,
+                defaultRowHeight: 50,
                 tableBodyHeight: 0,
                 buffer: [],
                 offset: 0,
                 nextOffset: 0,
-                lastLimit: 0,
-                lastPageScrolled: 0,
                 scrollingTop: false,
                 firstTimeScrollTop: true,
+                columnTypes: {
+                    string: 'string',
+                    image: 'image',
+                    html: 'html',
+                    actions: 'actions'
+                }
             }
         },
         mounted() {
@@ -97,12 +135,12 @@
 
                 if (this.oldScroll < currentScroll) {
                     if (percent >= 80) {
-                        if(this.scrollingTop){
+                        if (this.scrollingTop) {
                             this.nextOffset += this.nextOffset + this.perPage * 3;
                         }
                         this.scrollingTop = false;
                         this.firstTimeScrollTop = true;
-                        this.nextOffset = (this.nextOffset == 0) ? this.nextOffset + this.perPage: this.nextOffset;
+                        this.nextOffset = (this.nextOffset == 0) ? this.nextOffset + this.perPage : this.nextOffset;
 
                         this.offset = this.nextOffset;
                     }
@@ -110,9 +148,9 @@
                     if (percent <= 20) {
                         this.scrollingTop = true;
                         let nextScrollOffset = this.offset;
-                        if(this.firstTimeScrollTop){
-                             nextScrollOffset = this.offset - this.perPage * 3;
-                        }else{
+                        if (this.firstTimeScrollTop) {
+                            nextScrollOffset = this.offset - this.perPage * 3;
+                        } else {
                             nextScrollOffset -= this.perPage;
                         }
                         this.firstTimeScrollTop = false;
@@ -137,7 +175,7 @@
                     this.nextOffset += meta.limit;
                 }
 
-                if(meta.offset == 0){
+                if (meta.offset == 0) {
                     this.nextOffset = this.perPage * 3;
                 }
                 this.$emit("loadData", meta);
@@ -145,6 +183,12 @@
             setTableBodyHeight() {
                 this.tableBodyHeight = this.$refs.tableBody.offsetHeight;
                 this.$forceUpdate();
+            },
+            rowSelected(row) {
+                this.$emit("rowSelected", row);
+            },
+            actionClicked(action, row) {
+                this.$emit(action.eventName, row);
             }
         },
         beforeDestroy() {
@@ -158,12 +202,12 @@
                 } else if (!this.scrollingTop && this.buffer.length >= this.perPage * 3) {
                     this.buffer.splice(0, this.perPage);
                     this.buffer.push(...newData);
-                    this.$refs.tableBody.scrollTop = this.pageHeight / 3 + 50;
+                    this.$refs.tableBody.scrollTop = this.pageHeight / 2;
                 } else if (this.scrollingTop) {
                     this.buffer.splice(this.perPage * 2, this.perPage);
-                    this.buffer.unshift(...newData)
+                    this.buffer.unshift(...newData);
                     this.buffer.length = this.perPage * 3;
-                    this.$refs.tableBody.scrollTop = this.pageHeight / 3 + 500;
+                    this.$refs.tableBody.scrollTop = this.pageHeight + 3 * this.rowHeight;
                 }
             },
             offset() {
@@ -197,6 +241,7 @@
         padding-right: 15px;
         border-bottom: 1px solid #e0e0e0;
         border-collapse: collapse;
+        height: 50px;
     }
 
     .table-row.header {
@@ -204,6 +249,10 @@
         font-weight: bold;
         min-height: 60px;
         top: 0;
+    }
+
+    .table-row.odd {
+        background: #fafafa;
     }
 
     .wrapper {
@@ -221,5 +270,7 @@
 
     .text {
         width: 350px;
+        display: flex;
+        align-items: center;
     }
 </style>
