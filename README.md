@@ -3,7 +3,7 @@
 This project is an example of a Vue js component for listing data, with infinite scroll and always keeping loaded only 
 3 pages.
 
-####props
+#### props
 ```javascript
 columns: {
     type: Array,
@@ -24,7 +24,7 @@ uniqueKey: {
     }
 }
 ```
-####example of usage (App.vue)
+#### example of usage (App.vue)
 ```javascript
 columns: [
   {
