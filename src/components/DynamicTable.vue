@@ -1,5 +1,8 @@
 <template>
-    <div class="table-container">
+    <div class="table-container" :class="{loading}">
+        <div class="loading overlay" v-if="loading">
+            Loading
+        </div>
         <div class="table-body" ref="tableBody">
             <div class="table-row header">
                 <div class="wrapper" v-for="(column, ind) in columns" :key="ind" :ref="column.key">
@@ -101,7 +104,8 @@
                     image: 'image',
                     html: 'html',
                     actions: 'actions'
-                }
+                },
+                loading: false
             }
         },
         mounted() {
@@ -136,54 +140,58 @@
         },
         methods: {
             onBodyScroll() {
-                // get the current scroll and calculate the current scroll percent
-                const tableBody = this.$refs.tableBody;
-                const currentScroll = tableBody.scrollTop;
-                let height = tableBody.clientHeight;
-                let scrollHeight = tableBody.scrollHeight - height;
-                let percent = Math.floor(currentScroll / scrollHeight * 100);
+                if (!this.loading) {
+                    // get the current scroll and calculate the current scroll percent
+                    const tableBody = this.$refs.tableBody;
+                    const currentScroll = tableBody.scrollTop;
+                    let height = tableBody.clientHeight;
+                    let scrollHeight = tableBody.scrollHeight - height;
+                    let percent = Math.floor(currentScroll / scrollHeight * 100);
 
-                // if the oldscroll is less than current scroll it means that the user is scrolling down
-                if (this.oldScroll < currentScroll) {
-                    // if the users scrolled 80% we load new data
-                    if (percent >= 80) {
-                        // check if the users previusly scrolled top and change the offset
-                        if (this.scrollingTop) {
-                            this.nextOffset += this.nextOffset + this.perPage * 3;
+                    // if the oldscroll is less than current scroll it means that the user is scrolling down
+                    if (this.oldScroll < currentScroll) {
+                        // if the users scrolled 80% we load new data
+                        if (percent >= 80) {
+                            // check if the users previusly scrolled top and change the offset
+                            if (this.scrollingTop) {
+                                this.nextOffset += this.nextOffset + this.perPage * 3;
+                            }
+                            // reset scrolling top vars
+                            this.scrollingTop = false;
+                            this.firstTimeScrollTop = true;
+                            // check if nextOffset is 0 , increment it with a page
+                            this.nextOffset = (this.nextOffset == 0) ? this.nextOffset + this.perPage : this.nextOffset;
+                            // change the offset with nextoffset
+                            this.offset = this.nextOffset;
                         }
-                        // reset scrolling top vars
-                        this.scrollingTop = false;
-                        this.firstTimeScrollTop = true;
-                        // check if nextOffset is 0 , increment it with a page
-                        this.nextOffset = (this.nextOffset == 0) ? this.nextOffset + this.perPage : this.nextOffset;
-                        // change the offset with nextoffset
-                        this.offset = this.nextOffset;
-                    }
-                } else if (this.oldScroll > currentScroll) {
-                    // user is scrolling top, check if he reached 20% of scroll
-                    if (percent <= 20) {
-                        // same kind of logic for offsettings
-                        this.scrollingTop = true;
-                        let nextScrollOffset = this.offset;
-                        if (this.firstTimeScrollTop) {
-                            nextScrollOffset = this.offset - this.perPage * 3;
-                        } else {
-                            nextScrollOffset -= this.perPage;
-                        }
-                        this.firstTimeScrollTop = false;
-                        this.nextOffset = 0;
-                        this.offset = nextScrollOffset > 0 ? nextScrollOffset : this.nextOffset;
+                    } else if (this.oldScroll > currentScroll) {
+                        // user is scrolling top, check if he reached 20% of scroll
+                        if (percent <= 20) {
+                            // same kind of logic for offsettings
+                            this.scrollingTop = true;
+                            let nextScrollOffset = this.offset;
+                            if (this.firstTimeScrollTop) {
+                                nextScrollOffset = this.offset - this.perPage * 3;
+                            } else {
+                                nextScrollOffset -= this.perPage;
+                            }
+                            this.firstTimeScrollTop = false;
+                            this.nextOffset = 0;
+                            this.offset = nextScrollOffset > 0 ? nextScrollOffset : this.nextOffset;
 
+                        }
                     }
+
+                    // set oldscroll with the new scroll
+                    this.oldScroll = Math.floor(currentScroll);
+                } else {
+                    this.$refs.tableBody.scrollTop = this.oldScroll;
                 }
-
-                // set oldscroll with the new scroll
-                this.oldScroll = Math.floor(currentScroll);
-
                 // because this is a function executed on window event and multiple times, we need to force the update
                 this.$forceUpdate();
             },
             loadData(meta = null) {
+                this.loading = true;
                 // if meta is null, get the meta from data
                 if (!meta) {
                     meta = {
@@ -248,6 +256,7 @@
                     // set the scroll back
                     this.$refs.tableBody.scrollTop = this.pageHeight + 3 * this.rowHeight;
                 }
+                this.loading = false;
             },
             offset() {
                 // when offset changes , load data
@@ -312,5 +321,19 @@
         width: 350px;
         display: flex;
         align-items: center;
+    }
+
+    .overlay.loading{
+        position: fixed;
+        top: 50%;
+        transform: translateY(-50%);
+        height: 100%;
+        width: 100%;
+        background: rgba(255,255, 255, .8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #333;
+
     }
 </style>
