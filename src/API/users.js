@@ -11,8 +11,9 @@ const all = (payload) => {
                 data: currentUsers,
                 total
             };
-
-            resolve(usersMeta)
+            setTimeout(() => {
+                resolve(usersMeta)
+            }, 500);
         }).catch((error) => {
             // in our case will never fail
             reject(error)
